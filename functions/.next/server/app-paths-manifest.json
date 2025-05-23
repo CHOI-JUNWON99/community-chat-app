@@ -1,0 +1,12 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/chat/[chatId]/page": "app/chat/[chatId]/page.js",
+  "/community/page": "app/community/page.js",
+  "/login/page": "app/login/page.js",
+  "/chatlist/page": "app/chatlist/page.js",
+  "/mypage/page": "app/mypage/page.js",
+  "/post/page": "app/post/page.js",
+  "/page": "app/page.js",
+  "/postdetail/[id]/page": "app/postdetail/[id]/page.js"
+}

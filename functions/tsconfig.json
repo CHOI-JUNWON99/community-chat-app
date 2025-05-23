@@ -1,17 +1,16 @@
 {
   "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
     "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
-    "moduleResolution": "nodenext",
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "outDir": "lib",
-    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "target": "es2017"
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "outDir": "lib"
   },
-  "compileOnSave": true,
-  "include": [
-    "src"
-  ]
+  "include": ["src", "**/*.ts"],
+  "exclude": ["node_modules"]
 }

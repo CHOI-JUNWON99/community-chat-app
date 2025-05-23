@@ -1,0 +1,12 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/favicon.ico/route": "/favicon.ico",
+  "/chat/[chatId]/page": "/chat/[chatId]",
+  "/community/page": "/community",
+  "/login/page": "/login",
+  "/chatlist/page": "/chatlist",
+  "/mypage/page": "/mypage",
+  "/post/page": "/post",
+  "/page": "/",
+  "/postdetail/[id]/page": "/postdetail/[id]"
+}

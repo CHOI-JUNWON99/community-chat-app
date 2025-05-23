@@ -18,7 +18,7 @@ export default function FreeBoard() {
     fetch("https://jsonplaceholder.typicode.com/posts")
       .then((res) => res.json())
       .then((data) => {
-        setPosts(data.slice(0, 20)); // 상위 20개만 표시
+        setPosts(data.slice(0, 50)); // 상위 50개만 표시
         setLoading(false);
       });
   }, []);
