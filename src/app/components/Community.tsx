@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useCallback, useMemo, useTransition } from "react";
 import { collection, getDocs, Timestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { db } from "@/app/lib/firebase";
@@ -10,6 +10,7 @@ import Footer from "@/app/components/Footer";
 import Link from "next/link";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { useQuery } from "@tanstack/react-query";
 
 interface Post {
   id: string;
@@ -21,40 +22,39 @@ interface Post {
   author_email: string;
 }
 
+const fetchPosts = async () => {
+  const snapshot = await getDocs(collection(db, "posts"));
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Post[];
+};
+
 export default function Community() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const [, startTransition] = useTransition();
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      try {
-        const snapshot = await getDocs(collection(db, "posts"));
-        const fetchedPosts = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Post[];
-        setPosts(fetchedPosts);
-      } catch (error) {
-        console.error("🔥 Firestore 가져오기 실패", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: postsData = [], isLoading } = useQuery({
+    queryKey: ["posts"],
+    queryFn: fetchPosts,
+    staleTime: 1000 * 60, // 1분간 fresh
+  });
 
-    fetchPosts();
+  const handleSearchChange = useCallback((query: string) => {
+    startTransition(() => {
+      setSearchQuery(query);
+    });
   }, []);
-
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
-  };
 
   const handleWrite = () => router.push("/post");
 
-  const filteredPosts = posts.filter((post) =>
-    post.title.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredPosts = useMemo(
+    () =>
+      postsData.filter((post) =>
+        post.title.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    [postsData, searchQuery]
   );
 
   return (
@@ -73,7 +73,7 @@ export default function Community() {
       </div>
 
       <div className="my-6">
-        {loading ? (
+        {isLoading ? (
           Array.from({ length: 10 }).map((_, i) => (
             <div className="flex gap-4 items-center py-2" key={`skeleton-${i}`}>
               <Skeleton width={70} height={70} />

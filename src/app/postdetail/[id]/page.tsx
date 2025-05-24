@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createChatRoom } from "@/app/lib/chat";
 //import { useParams, useRouter } from "next/navigation";
@@ -14,6 +13,7 @@ import {
 import { db } from "@/app/lib/firebase";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Post {
   id: string;
@@ -28,49 +28,37 @@ interface Post {
   created_at: Timestamp;
 }
 
+const fetchPost = async (postId: string | undefined) => {
+  if (!postId) return null;
+  const docRef = doc(db, "posts", postId);
+  const docSnap = await getDoc(docRef);
+  return docSnap.exists()
+    ? ({ id: docSnap.id, ...docSnap.data() } as Post)
+    : null;
+};
+
 export default function PostDetail() {
   const params = useParams();
   const router = useRouter();
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
-
   const postId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      if (!postId) return;
+  const { data: post, isLoading } = useQuery({
+    queryKey: ["post", postId],
+    queryFn: () => fetchPost(postId),
+    enabled: !!postId,
+    staleTime: 1000 * 60,
+  });
 
-      try {
-        const docRef = doc(db, "posts", postId);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          setPost({ id: docSnap.id, ...docSnap.data() } as Post);
-        } else {
-          console.error("No such document!");
-        }
-      } catch (error) {
-        console.error("Error fetching post:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPost();
-  }, [postId]);
+  const queryClient = useQueryClient();
 
   const handleLike = async () => {
     if (!postId) return;
-
     try {
       const postRef = doc(db, "posts", postId);
       await updateDoc(postRef, {
         likes_count: increment(1),
       });
-
-      setPost((prev) =>
-        prev ? { ...prev, likes_count: prev.likes_count + 1 } : prev
-      );
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
     } catch (error) {
       console.error("Error updating likes:", error);
     }
@@ -86,7 +74,7 @@ export default function PostDetail() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return <div className="text-center mt-10">Loading...</div>;
   }
 

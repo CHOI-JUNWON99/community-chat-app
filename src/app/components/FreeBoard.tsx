@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
+import useSWR from "swr";
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 interface Post {
   id: number;
@@ -11,23 +13,17 @@ interface Post {
 }
 
 export default function FreeBoard() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("https://jsonplaceholder.typicode.com/posts")
-      .then((res) => res.json())
-      .then((data) => {
-        setPosts(data.slice(0, 50)); // 상위 50개만 표시
-        setLoading(false);
-      });
-  }, []);
+  const { data: posts = [], isLoading } = useSWR<Post[]>(
+    "https://jsonplaceholder.typicode.com/posts",
+    fetcher,
+    { dedupingInterval: 60000 }
+  );
 
   return (
     <div className="pt-[70px] pb-[60px] max-w-xl mx-auto min-h-screen bg-white">
       <Navbar />
       <h2 className="text-xl font-bold text-center py-4">Free Board</h2>
-      {loading ? (
+      {isLoading ? (
         <p className="text-center py-10">불러오는 중...</p>
       ) : (
         <div className="p-4 space-y-4">

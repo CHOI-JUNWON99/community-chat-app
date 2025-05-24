@@ -7,7 +7,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
 }
 
-export default function Button({ children, className, ...props }: ButtonProps) {
+const Button = ({ children, className, ...props }: ButtonProps) => {
   return (
     <button
       className={classNames(
@@ -20,4 +20,6 @@ export default function Button({ children, className, ...props }: ButtonProps) {
       {children}
     </button>
   );
-}
+};
+
+export default React.memo(Button);

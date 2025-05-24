@@ -8,7 +8,7 @@ interface HeaderProps {
   title: string;
 }
 
-export default function Header({ title }: HeaderProps) {
+const Header = ({ title }: HeaderProps) => {
   const router = useRouter();
 
   return (
@@ -22,4 +22,6 @@ export default function Header({ title }: HeaderProps) {
       </button>
     </header>
   );
-}
+};
+
+export default React.memo(Header);

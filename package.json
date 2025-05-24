@@ -10,13 +10,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.8.2",
+    "@tanstack/react-query": "^5.77.0",
     "classnames": "^2.5.1",
     "firebase": "^11.6.0",
     "lodash.debounce": "^4.0.8",
     "next": "15.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-loading-skeleton": "^3.5.0"
+    "react-loading-skeleton": "^3.5.0",
+    "react-redux": "^9.2.0",
+    "recoil": "^0.7.7",
+    "swr": "^2.3.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

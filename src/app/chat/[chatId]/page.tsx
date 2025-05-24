@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   collection,
@@ -139,31 +139,37 @@ export default function ChatRoom() {
     }
   };
 
+  const renderedMessages = useMemo(
+    () =>
+      messages.map((msg) => (
+        <div
+          key={msg.id}
+          className={`flex ${
+            msg.sender_uid === auth.currentUser?.uid
+              ? "justify-end"
+              : "justify-start"
+          } mb-2`}
+        >
+          <div
+            className={`max-w-[70%] p-2 rounded-md text-sm ${
+              msg.sender_uid === auth.currentUser?.uid
+                ? "bg-yellow-300 text-right"
+                : "bg-gray-200 text-left"
+            }`}
+          >
+            {msg.content}
+          </div>
+        </div>
+      )),
+    [messages]
+  );
+
   return (
     <div className="pt-[70px] pb-[60px] max-w-xl mx-auto min-h-screen bg-white flex flex-col">
       <Navbar />
 
       <main className="flex-1 overflow-y-auto p-5">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${
-              msg.sender_uid === auth.currentUser?.uid
-                ? "justify-end"
-                : "justify-start"
-            } mb-2`}
-          >
-            <div
-              className={`max-w-[70%] p-2 rounded-md text-sm ${
-                msg.sender_uid === auth.currentUser?.uid
-                  ? "bg-yellow-300 text-right"
-                  : "bg-gray-200 text-left"
-              }`}
-            >
-              {msg.content}
-            </div>
-          </div>
-        ))}
+        {renderedMessages}
         <div ref={messagesEndRef} />
       </main>
 
