@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { collection, getDocs, Timestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { db } from "@/app/lib/firebase";
@@ -10,6 +10,9 @@ import Footer from "@/app/components/Footer";
 import Link from "next/link";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { useQuery } from "@tanstack/react-query";
+import { useSetRecoilState } from "recoil";
+import { selectedPostIdAtom } from "@/app/recoil/userAtom";
 
 interface Post {
   id: string;
@@ -22,40 +25,38 @@ interface Post {
 }
 
 export default function Community() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const setSelectedPostId = useSetRecoilState(selectedPostIdAtom);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      try {
-        const snapshot = await getDocs(collection(db, "posts"));
-        const fetchedPosts = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Post[];
-        setPosts(fetchedPosts);
-      } catch (error) {
-        console.error("🔥 Firestore 가져오기 실패", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Firestore에서 게시글 목록 fetch 함수
+  const fetchPosts = async () => {
+    const snapshot = await getDocs(collection(db, "posts"));
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Post[];
+  };
 
-    fetchPosts();
-  }, []);
+  // React Query로 게시글 fetch 및 검색 필터링
+  const {
+    data: filteredPosts,
+    isLoading,
+    isError,
+  } = useQuery<Post[], Error>({
+    queryKey: ["posts", searchQuery],
+    queryFn: fetchPosts,
+    select: (posts) =>
+      posts.filter((post) =>
+        post.title.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+  });
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
   };
 
   const handleWrite = () => router.push("/post");
-
-  const filteredPosts = posts.filter((post) =>
-    post.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="pt-[70px] pb-[60px] max-w-xl mx-auto min-h-screen bg-white">
@@ -73,7 +74,7 @@ export default function Community() {
       </div>
 
       <div className="my-6">
-        {loading ? (
+        {isLoading ? (
           Array.from({ length: 10 }).map((_, i) => (
             <div className="flex gap-4 items-center py-2" key={`skeleton-${i}`}>
               <Skeleton width={70} height={70} />
@@ -84,7 +85,11 @@ export default function Community() {
               <Skeleton width={80} height={15} />
             </div>
           ))
-        ) : filteredPosts.length > 0 ? (
+        ) : isError ? (
+          <p className="text-center text-red-500">
+            게시글을 불러오지 못했습니다.
+          </p>
+        ) : filteredPosts && filteredPosts.length > 0 ? (
           filteredPosts.map((post) => (
             <div
               key={post.id}
@@ -93,6 +98,7 @@ export default function Community() {
               <Link
                 href={`/postdetail/${post.id}`}
                 className="flex gap-4 w-full"
+                onClick={() => setSelectedPostId(post.id)}
               >
                 <div className="w-[70px] h-[70px] rounded bg-cover bg-center bg-gray-300 overflow-hidden flex items-center justify-center">
                   <img

@@ -6,7 +6,7 @@ import FreeBoard from "@/app/components/FreeBoard";
 
 export default function CommunityClient() {
   const searchParams = useSearchParams();
-  const type = searchParams.get("type");
+  const type = searchParams?.get("type") ?? "";
 
   return type === "free" ? <FreeBoard /> : <Community />;
 }

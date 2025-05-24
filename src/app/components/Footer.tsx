@@ -13,7 +13,7 @@ const menuItems = [
 
 const Footer: React.FC = () => {
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   const handleNav = (item: (typeof menuItems)[number]) => {
     if (item.requireAuth && !auth.currentUser) {

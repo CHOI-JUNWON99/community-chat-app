@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { createChatRoom } from "@/app/lib/chat";
-//import { useParams, useRouter } from "next/navigation";
 import {
   doc,
   getDoc,
@@ -30,7 +29,7 @@ interface Post {
 
 export default function PostDetail() {
   const params = useParams();
-  //const router = useRouter();
+  const router = useRouter();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -113,7 +112,17 @@ export default function PostDetail() {
             ❤️ Like {post.likes_count}
           </button>
           <button
-            onClick={() => createChatRoom(post.author_uid, post.author_email)}
+            onClick={async () => {
+              const chatId = await createChatRoom(
+                post.author_uid,
+                post.author_email
+              );
+              if (chatId) {
+                router.push(`/chat/${chatId}`);
+              } else {
+                router.push("/login");
+              }
+            }}
             className="bg-orange-400 hover:bg-orange-500 text-white py-2 px-4 rounded font-bold"
           >
             ✉️ Send Message
