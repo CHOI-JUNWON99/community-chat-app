@@ -1,7 +1,6 @@
 "use client";
 
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
+import React, { Suspense, lazy } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRef, useEffect } from "react";
 import { FixedSizeList as List } from "react-window";
@@ -15,6 +14,9 @@ const fetchPosts = async ({ pageParam = 0 }) => {
   );
   return res.json();
 };
+
+const Navbar = lazy(() => import("@/app/components/Navbar"));
+const Footer = lazy(() => import("@/app/components/Footer"));
 
 export default function FreeBoard() {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -76,7 +78,9 @@ export default function FreeBoard() {
 
   return (
     <div className="pt-[70px] pb-[60px] max-w-xl mx-auto min-h-screen bg-white">
-      <Navbar />
+      <Suspense fallback={<div>Loading Navbar...</div>}>
+        <Navbar />
+      </Suspense>
       <h2 className="text-xl font-bold text-center py-4">Free Board</h2>
       {isLoading ? (
         <p className="text-center py-10">불러오는 중...</p>
@@ -110,7 +114,9 @@ export default function FreeBoard() {
           )}
         </div>
       )}
-      <Footer />
+      <Suspense fallback={<div>Loading Footer...</div>}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }

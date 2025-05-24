@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
 //import { BiSolidSchool } from "react-icons/bi";
+
+const Navbar = lazy(() => import("@/app/components/Navbar"));
+const Footer = lazy(() => import("@/app/components/Footer"));
 
 export default function MainPage() {
   const [imageIndex, setImageIndex] = useState(0);
@@ -19,7 +20,9 @@ export default function MainPage() {
 
   return (
     <main className="w-full min-h-screen bg-white shadow-lg max-w-xl mx-auto p-4 pt-[70px] pb-[60px]">
-      <Navbar />
+      <Suspense fallback={<div>Loading Navbar...</div>}>
+        <Navbar />
+      </Suspense>
       {/* Quote Banner */}
       <section className="text-center font-bold text-lg py-4 rounded-md">
         <img
@@ -89,7 +92,9 @@ export default function MainPage() {
           </div>
         ))}
       </section>
-      <Footer />
+      <Suspense fallback={<div>Loading Footer...</div>}>
+        <Footer />
+      </Suspense>
     </main>
   );
 }

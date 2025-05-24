@@ -4,9 +4,7 @@ import { useState, useCallback, useMemo, useTransition } from "react";
 import { collection, getDocs, Timestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { db } from "@/app/lib/firebase";
-import Navbar from "@/app/components/Navbar";
-import Button from "@/app/components/Button";
-import Footer from "@/app/components/Footer";
+import React, { Suspense, lazy } from "react";
 import Link from "next/link";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -32,6 +30,10 @@ const fetchPosts = async () => {
 };
 
 const VIRTUALIZE_THRESHOLD = 100;
+
+const Navbar = lazy(() => import("@/app/components/Navbar"));
+const Button = lazy(() => import("@/app/components/Button"));
+const Footer = lazy(() => import("@/app/components/Footer"));
 
 export default function Community() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -112,7 +114,9 @@ export default function Community() {
 
   return (
     <div className="pt-[70px] pb-[60px] max-w-xl mx-auto min-h-screen bg-white">
-      <Navbar />
+      <Suspense fallback={<div>Loading Navbar...</div>}>
+        <Navbar />
+      </Suspense>
       <div className="sticky top-0 z-50 w-full bg-gray-100 p-2 flex items-center gap-2 border-b border-gray-200">
         <input
           type="text"
@@ -120,9 +124,11 @@ export default function Community() {
           placeholder="Search"
           onChange={(e) => handleSearchChange(e.target.value)}
         />
-        <Button onClick={handleWrite} className="bg-orange-400 text-white">
-          Write
-        </Button>
+        <Suspense fallback={<div>Loading Button...</div>}>
+          <Button onClick={handleWrite} className="bg-orange-400 text-white">
+            Write
+          </Button>
+        </Suspense>
       </div>
 
       <div className="my-6">
@@ -194,7 +200,9 @@ export default function Community() {
         )}
       </div>
 
-      <Footer />
+      <Suspense fallback={<div>Loading Footer...</div>}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }

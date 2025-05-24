@@ -1,5 +1,5 @@
-import { Suspense } from "react";
-import CommunityClient from "./CommunityClient";
+import { Suspense, lazy } from "react";
+const CommunityClient = lazy(() => import("./CommunityClient"));
 
 export default function CommunityPage() {
   return (

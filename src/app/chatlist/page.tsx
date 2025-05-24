@@ -12,7 +12,7 @@ import {
 import { auth, db } from "@/app/lib/firebase";
 import { useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
+import React, { Suspense, lazy } from "react";
 import { FixedSizeList as List } from "react-window";
 
 interface ChatRoom {
@@ -27,6 +27,8 @@ interface ChatRoom {
   last_message: string;
   last_message_at: Timestamp;
 }
+
+const Footer = lazy(() => import("@/app/components/Footer"));
 
 export default function ChatList() {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
@@ -153,7 +155,9 @@ export default function ChatList() {
         )}
       </main>
 
-      <Footer />
+      <Suspense fallback={<div>Loading Footer...</div>}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }

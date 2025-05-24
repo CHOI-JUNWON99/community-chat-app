@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense, lazy } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/app/lib/firebase";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
+
+const Navbar = lazy(() => import("@/app/components/Navbar"));
+const Footer = lazy(() => import("@/app/components/Footer"));
 
 interface UserProfile {
   displayName: string | null;
@@ -44,7 +45,9 @@ export default function MyPage() {
 
   return (
     <div className="pt-[70px] pb-[60px] min-h-screen max-w-xl mx-auto bg-white shadow-md flex flex-col">
-      <Navbar />
+      <Suspense fallback={<div>Loading Navbar...</div>}>
+        <Navbar />
+      </Suspense>
 
       {/* 프로필 섹션 */}
       <section className="p-5 border-b border-gray-200 flex items-center justify-between relative mt-8">
@@ -169,7 +172,9 @@ export default function MyPage() {
         </button>
       </div>
 
-      <Footer />
+      <Suspense fallback={<div>Loading Footer...</div>}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }
