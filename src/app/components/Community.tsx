@@ -11,6 +11,7 @@ import Link from "next/link";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { useQuery } from "@tanstack/react-query";
+import { FixedSizeList as List } from "react-window";
 
 interface Post {
   id: string;
@@ -29,6 +30,8 @@ const fetchPosts = async () => {
     ...doc.data(),
   })) as Post[];
 };
+
+const VIRTUALIZE_THRESHOLD = 100;
 
 export default function Community() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,6 +59,56 @@ export default function Community() {
       ),
     [postsData, searchQuery]
   );
+
+  const useVirtualization = filteredPosts.length > VIRTUALIZE_THRESHOLD;
+
+  const Row = ({
+    index,
+    style,
+  }: {
+    index: number;
+    style: React.CSSProperties;
+  }) => {
+    const post = filteredPosts[index];
+    if (!post) return null;
+    return (
+      <div
+        key={post.id}
+        style={style}
+        className="flex gap-4 border-b py-3 cursor-pointer hover:bg-gray-50"
+      >
+        <Link href={`/postdetail/${post.id}`} className="flex gap-4 w-full">
+          <div className="w-[70px] h-[70px] rounded bg-cover bg-center bg-gray-300 overflow-hidden flex items-center justify-center">
+            <img
+              src="/placeholder.jpg"
+              alt="post"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="flex-1 relative">
+            <h4 className="text-md font-bold mb-1">
+              {post.title.length > 35
+                ? `${post.title.slice(0, 35)}...`
+                : post.title}
+            </h4>
+            <div className="text-sm font-semibold text-gray-600 flex gap-2"></div>
+            <div className="flex text-sm text-gray-500 mt-1 gap-3">
+              <span>❤️ {post.likes_count}</span>
+              <span>💬 {post.comments_count}</span>
+            </div>
+            <div className="absolute right-0 top-1/2 transform -translate-y-1/2 text-right text-xs text-gray-500">
+              {/* <span>{post.author_email}</span> */}
+              <div>
+                {post.created_at?.toDate
+                  ? post.created_at.toDate().toLocaleString()
+                  : ""}
+              </div>
+            </div>
+          </div>
+        </Link>
+      </div>
+    );
+  };
 
   return (
     <div className="pt-[70px] pb-[60px] max-w-xl mx-auto min-h-screen bg-white">
@@ -85,45 +138,57 @@ export default function Community() {
             </div>
           ))
         ) : filteredPosts.length > 0 ? (
-          filteredPosts.map((post) => (
-            <div
-              key={post.id}
-              className="flex gap-4 border-b py-3 cursor-pointer hover:bg-gray-50"
+          useVirtualization ? (
+            <List
+              height={600}
+              itemCount={filteredPosts.length}
+              itemSize={100}
+              width={"100%"}
+              style={{ maxWidth: "100%" }}
             >
-              <Link
-                href={`/postdetail/${post.id}`}
-                className="flex gap-4 w-full"
+              {Row}
+            </List>
+          ) : (
+            filteredPosts.map((post) => (
+              <div
+                key={post.id}
+                className="flex gap-4 border-b py-3 cursor-pointer hover:bg-gray-50"
               >
-                <div className="w-[70px] h-[70px] rounded bg-cover bg-center bg-gray-300 overflow-hidden flex items-center justify-center">
-                  <img
-                    src="/placeholder.jpg"
-                    alt="post"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1 relative">
-                  <h4 className="text-md font-bold mb-1">
-                    {post.title.length > 35
-                      ? `${post.title.slice(0, 35)}...`
-                      : post.title}
-                  </h4>
-                  <div className="text-sm font-semibold text-gray-600 flex gap-2"></div>
-                  <div className="flex text-sm text-gray-500 mt-1 gap-3">
-                    <span>❤️ {post.likes_count}</span>
-                    <span>💬 {post.comments_count}</span>
+                <Link
+                  href={`/postdetail/${post.id}`}
+                  className="flex gap-4 w-full"
+                >
+                  <div className="w-[70px] h-[70px] rounded bg-cover bg-center bg-gray-300 overflow-hidden flex items-center justify-center">
+                    <img
+                      src="/placeholder.jpg"
+                      alt="post"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 text-right text-xs text-gray-500">
-                    {/* <span>{post.author_email}</span> */}
-                    <div>
-                      {post.created_at?.toDate
-                        ? post.created_at.toDate().toLocaleString()
-                        : ""}
+                  <div className="flex-1 relative">
+                    <h4 className="text-md font-bold mb-1">
+                      {post.title.length > 35
+                        ? `${post.title.slice(0, 35)}...`
+                        : post.title}
+                    </h4>
+                    <div className="text-sm font-semibold text-gray-600 flex gap-2"></div>
+                    <div className="flex text-sm text-gray-500 mt-1 gap-3">
+                      <span>❤️ {post.likes_count}</span>
+                      <span>💬 {post.comments_count}</span>
+                    </div>
+                    <div className="absolute right-0 top-1/2 transform -translate-y-1/2 text-right text-xs text-gray-500">
+                      {/* <span>{post.author_email}</span> */}
+                      <div>
+                        {post.created_at?.toDate
+                          ? post.created_at.toDate().toLocaleString()
+                          : ""}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            </div>
-          ))
+                </Link>
+              </div>
+            ))
+          )
         ) : (
           <p className="text-center text-red-500">게시물이 없습니다.</p>
         )}

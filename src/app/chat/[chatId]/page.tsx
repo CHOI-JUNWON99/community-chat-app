@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   collection,
@@ -18,6 +18,7 @@ import {
 import { auth, db } from "@/app/lib/firebase";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
+import { FixedSizeList as List } from "react-window";
 
 interface Message {
   id: string;
@@ -26,6 +27,8 @@ interface Message {
   created_at: Timestamp;
   read: boolean;
 }
+
+const VIRTUALIZE_THRESHOLD = 200;
 
 export default function ChatRoom() {
   const { chatId } = useParams();
@@ -139,37 +142,77 @@ export default function ChatRoom() {
     }
   };
 
-  const renderedMessages = useMemo(
-    () =>
-      messages.map((msg) => (
+  const useVirtualization = messages.length > VIRTUALIZE_THRESHOLD;
+
+  const Row = ({
+    index,
+    style,
+  }: {
+    index: number;
+    style: React.CSSProperties;
+  }) => {
+    const msg = messages[index];
+    if (!msg) return null;
+    return (
+      <div
+        key={msg.id}
+        style={style}
+        className={`flex ${
+          msg.sender_uid === auth.currentUser?.uid
+            ? "justify-end"
+            : "justify-start"
+        } mb-2`}
+      >
         <div
-          key={msg.id}
-          className={`flex ${
+          className={`max-w-[70%] p-2 rounded-md text-sm ${
             msg.sender_uid === auth.currentUser?.uid
-              ? "justify-end"
-              : "justify-start"
-          } mb-2`}
+              ? "bg-yellow-300 text-right"
+              : "bg-gray-200 text-left"
+          }`}
         >
-          <div
-            className={`max-w-[70%] p-2 rounded-md text-sm ${
-              msg.sender_uid === auth.currentUser?.uid
-                ? "bg-yellow-300 text-right"
-                : "bg-gray-200 text-left"
-            }`}
-          >
-            {msg.content}
-          </div>
+          {msg.content}
         </div>
-      )),
-    [messages]
-  );
+      </div>
+    );
+  };
 
   return (
     <div className="pt-[70px] pb-[60px] max-w-xl mx-auto min-h-screen bg-white flex flex-col">
       <Navbar />
 
       <main className="flex-1 overflow-y-auto p-5">
-        {renderedMessages}
+        {useVirtualization ? (
+          <List
+            height={600}
+            itemCount={messages.length}
+            itemSize={50}
+            width={"100%"}
+            style={{ maxWidth: "100%" }}
+          >
+            {Row}
+          </List>
+        ) : (
+          messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex ${
+                msg.sender_uid === auth.currentUser?.uid
+                  ? "justify-end"
+                  : "justify-start"
+              } mb-2`}
+            >
+              <div
+                className={`max-w-[70%] p-2 rounded-md text-sm ${
+                  msg.sender_uid === auth.currentUser?.uid
+                    ? "bg-yellow-300 text-right"
+                    : "bg-gray-200 text-left"
+                }`}
+              >
+                {msg.content}
+              </div>
+            </div>
+          ))
+        )}
         <div ref={messagesEndRef} />
       </main>
 

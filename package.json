@@ -20,6 +20,7 @@
     "react-dom": "^19.0.0",
     "react-loading-skeleton": "^3.5.0",
     "react-redux": "^9.2.0",
+    "react-window": "^1.8.11",
     "recoil": "^0.7.7",
     "swr": "^2.3.3"
   },
@@ -30,6 +31,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/react-window": "^1.8.8",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
     "firebase-tools": "^14.2.1",
